@@ -139,7 +139,7 @@ REST_FRAMEWORK = {
 }
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://getconsultant-production.up.railway.app"
+    "https://getconsultant-production-a613.up.railway.app"
 ]
 
 CSRF_COOKIE_SECURE = True
