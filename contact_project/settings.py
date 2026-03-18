@@ -29,8 +29,7 @@ SECRET_KEY = "django-insecure-d!b*68&9pc_6#x%kwycs*&a6@@)#rfn-d&wl*#j2@7!&t53r!4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
-
+ALLOWED_HOSTS = ['getconsultant-production.up.railway.app']
 
 # Application definition
 
@@ -138,3 +137,7 @@ REST_FRAMEWORK = {
         'anon': '5/minute',
     }
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://getconsultant-production.up.railway.app"
+]
