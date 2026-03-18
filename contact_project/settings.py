@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import pymysql
 pymysql.install_as_MySQLdb()
 from pathlib import Path
-import os
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -89,7 +89,7 @@ DATABASES = {
     }
 }
 
-
+print("DB HOST:", os.getenv("DB_HOST"))
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
