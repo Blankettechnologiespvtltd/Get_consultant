@@ -81,11 +81,11 @@ WSGI_APPLICATION = "contact_project.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv("DB_NAME"),
-        'USER': os.getenv("DB_USER"),
-        'PASSWORD': os.getenv("DB_PASSWORD"),
-        'HOST': os.getenv("DB_HOST"),
-        'PORT': os.getenv("DB_PORT"),
+        'NAME': os.getenv("DB_NAME") or os.getenv("MYSQLDATABASE"),
+        'USER': os.getenv("DB_USER") or os.getenv("MYSQLUSER"),
+        'PASSWORD': os.getenv("DB_PASSWORD") or os.getenv("MYSQLPASSWORD"),
+        'HOST': os.getenv("DB_HOST") or os.getenv("MYSQLHOST"),
+        'PORT': os.getenv("DB_PORT") or os.getenv("MYSQLPORT"),
     }
 }
 
