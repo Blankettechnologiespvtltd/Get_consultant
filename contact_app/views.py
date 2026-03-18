@@ -9,6 +9,7 @@ from .serializers import ContactSerializer
 import pandas as pd
 from django.http import HttpResponse
 from io import BytesIO
+from rest_framework.viewsets import ModelViewSet
 
 # API to Save Data
 class ContactCreateAPI(APIView):
@@ -57,6 +58,10 @@ class ExportExcelAPI(APIView):
 
         response['Content-Disposition'] = 'attachment; filename=contacts.xlsx'
         return response
+
+class ContactViewSet(ModelViewSet):
+    queryset = Contact.objects.all()
+    serializer_class = ContactSerializer
 
 def home(request):
     return HttpResponse("API is running successfully")
