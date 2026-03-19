@@ -29,15 +29,18 @@ class ContactCreateAPI(APIView):
 
 class ExportExcelAPI(APIView):
     def get(self, request):
+        contacts = list(Contact.objects.all().values())
 
-        contacts = Contact.objects.all().values()
+        if not contacts:
+            return HttpResponse("No data available")
+
         df = pd.DataFrame(contacts)
 
-        # Add Serial Number
         df.insert(0, 'S. No', range(1, len(df) + 1))
-        df.drop(columns=['id'], inplace=True)
 
-        # Rename columns
+        if 'id' in df.columns:
+            df.drop(columns=['id'], inplace=True)
+
         df.rename(columns={
             'name': 'Name',
             'email': 'Email',
@@ -47,15 +50,15 @@ class ExportExcelAPI(APIView):
         }, inplace=True)
 
         buffer = BytesIO()
-        df.to_excel(buffer, index=False)
+        df.to_excel(buffer, index=False, engine='openpyxl')
         buffer.seek(0)
 
         response = HttpResponse(
             buffer,
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
-
         response['Content-Disposition'] = 'attachment; filename=contacts.xlsx'
+
         return response
 
 def home(request):
