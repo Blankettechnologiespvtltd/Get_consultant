@@ -9,6 +9,7 @@ from .serializers import ContactSerializer
 import pandas as pd
 from django.http import HttpResponse
 from io import BytesIO
+import traceback
 
 # API to Save Data
 class ContactCreateAPI(APIView):
@@ -29,39 +30,49 @@ class ContactCreateAPI(APIView):
 
 class ExportExcelAPI(APIView):
     def get(self, request):
-        contacts = list(Contact.objects.all().values())
+        try:
+            contacts = list(Contact.objects.all().values())
 
-        if not contacts:
-            return HttpResponse("No data available")
+            if not contacts:
+                return HttpResponse("No data available")
 
-        df = pd.DataFrame(contacts)
+            df = pd.DataFrame(contacts)
 
-        df.insert(0, 'S. No', range(1, len(df) + 1))
+            # Add Serial Number column
+            df.insert(0, 'S. No', range(1, len(df) + 1))
 
-        if 'id' in df.columns:
-            df.drop(columns=['id'], inplace=True)
+            # Remove ID column if exists
+            if 'id' in df.columns:
+                df.drop(columns=['id'], inplace=True)
 
-        df.rename(columns={
-            'name': 'Name',
-            'email': 'Email',
-            'mobile': 'Mobile Number',
-            'region': 'Region',
-            'message': 'Message/Comments'
-        }, inplace=True)
+            # Rename columns
+            df.rename(columns={
+                'name': 'Name',
+                'email': 'Email',
+                'mobile': 'Mobile Number',
+                'region': 'Region',
+                'message': 'Message/Comments'
+            }, inplace=True)
 
-        df.fillna('', inplace=True)
+            # Replace NaN with empty string
+            df.fillna('', inplace=True)
 
-        buffer = BytesIO()
-        df.to_excel(buffer, index=False, engine='openpyxl')
-        buffer.seek(0)
+            # Create Excel file in memory
+            buffer = BytesIO()
+            df.to_excel(buffer, index=False, engine='openpyxl')
+            buffer.seek(0)
 
-        response = HttpResponse(
-            buffer.getvalue(),
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        response['Content-Disposition'] = 'attachment; filename=contacts.xlsx'
+            # Send response
+            response = HttpResponse(
+                buffer.getvalue(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = 'attachment; filename=contacts.xlsx'
 
-        return response
+            return response
+
+        except Exception as e:
+            return HttpResponse(f"Error: {str(e)}", status=500)
 
 def home(request):
     return HttpResponse("API is running successfully")
