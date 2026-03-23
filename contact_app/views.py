@@ -57,6 +57,11 @@ class ExportExcelAPI(APIView):
             # Replace NaN with empty string
             df.fillna('', inplace=True)
 
+            # ✅ FIX: Remove timezone from datetime columns
+            for col in df.columns:
+                if 'date' in col.lower() or 'time' in col.lower():
+                    df[col] = pd.to_datetime(df[col], errors='coerce').dt.tz_localize(None)
+
             # Create Excel file in memory
             buffer = BytesIO()
             df.to_excel(buffer, index=False, engine='openpyxl')
