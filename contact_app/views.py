@@ -49,12 +49,14 @@ class ExportExcelAPI(APIView):
             'message': 'Message/Comments'
         }, inplace=True)
 
+        df.fillna('', inplace=True)
+
         buffer = BytesIO()
         df.to_excel(buffer, index=False, engine='openpyxl')
         buffer.seek(0)
 
         response = HttpResponse(
-            buffer,
+            buffer.getvalue(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         response['Content-Disposition'] = 'attachment; filename=contacts.xlsx'
