@@ -93,7 +93,7 @@ class ExportExcelAPI(APIView):
 
             # Send response
             response = HttpResponse(
-                buffer.getvalue(),
+                new_buffer.getvalue(),
                 content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
             response['Content-Disposition'] = 'attachment; filename=contacts.xlsx'
