@@ -52,8 +52,8 @@ class ExportExcelAPI(APIView):
                 'name': 'Name',
                 'email': 'Email',
                 'mobile': 'Mobile Number',
-                'region': 'Region',
-                'message': 'Message/Comments'
+                'subject': 'Subject',
+                'message': 'Message'
             }, inplace=True)
 
             df.fillna('', inplace=True)
