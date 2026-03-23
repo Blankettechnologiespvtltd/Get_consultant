@@ -10,6 +10,7 @@ import pandas as pd
 from django.http import HttpResponse
 from io import BytesIO
 import traceback
+from openpyxl import load_workbook
 
 # API to Save Data
 class ContactCreateAPI(APIView):
@@ -62,6 +63,33 @@ class ExportExcelAPI(APIView):
             buffer = BytesIO()
             df.to_excel(buffer, index=False, engine='openpyxl')
             buffer.seek(0)
+
+            # Load workbook
+            workbook = load_workbook(buffer)
+            worksheet = workbook.active
+
+            # ✅ Auto adjust column width
+            for col in worksheet.columns:
+                max_length = 0
+                col_letter = col[0].column_letter
+
+                for cell in col:
+                    try:
+                        if cell.value:
+                            max_length = max(max_length, len(str(cell.value)))
+                    except:
+                        pass
+
+                worksheet.column_dimensions[col_letter].width = max_length + 2
+
+            # ✅ Bold header (optional but recommended)
+            for cell in worksheet[1]:
+                cell.font = Font(bold=True)
+
+            # Save to new buffer
+            new_buffer = BytesIO()
+            workbook.save(new_buffer)
+            new_buffer.seek(0)
 
             # Send response
             response = HttpResponse(
