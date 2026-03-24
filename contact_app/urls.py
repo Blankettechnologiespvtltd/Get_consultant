@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterAPIView, ExportExcelAPI, home
+from contact_app.views import RegisterAPIView, ExportExcelAPI, home
 
 urlpatterns = [
     path('register/', RegisterAPIView.as_view()),
