@@ -54,54 +54,77 @@ class RegisterAPIView(APIView):
 class ExportExcelAPI(APIView):
     def get(self, request):
         try:
-            contacts = list(Contact.objects.all().values())
+            # ✅ Fetch data
+            queryset = Contact.objects.all().values()
 
-            if not contacts:
-                return HttpResponse("No data available")
+            if not queryset:
+                return Response(
+                    {"status": False, "message": "No data available"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
-            df = pd.DataFrame(contacts)
+            df = pd.DataFrame(list(queryset))
 
+            # ✅ Add Serial Number
             df.insert(0, 'S. No', range(1, len(df) + 1))
 
+            # ✅ Drop unnecessary fields
             if 'id' in df.columns:
                 df.drop(columns=['id'], inplace=True)
 
+            # ✅ Rename columns
             df.rename(columns={
                 'name': 'Name',
                 'email': 'Email',
                 'mobile': 'Mobile Number',
                 'subject': 'Subject',
-                'message': 'Message'
+                'message': 'Message',
+                'created_at': 'Created At'
             }, inplace=True)
 
+            # ✅ Handle missing values
             df.fillna('', inplace=True)
 
-            buffer = BytesIO()
-            df.to_excel(buffer, index=False, engine='openpyxl')
-            buffer.seek(0)
+            # ✅ 🔥 FIX: Remove timezone from datetime (IMPORTANT)
+            for col in df.columns:
+                if pd.api.types.is_datetime64_any_dtype(df[col]):
+                    df[col] = df[col].dt.tz_localize(None)
 
-            workbook = load_workbook(buffer)
+            # ✅ Create Excel buffer
+            output = BytesIO()
+            df.to_excel(output, index=False, engine='openpyxl')
+            output.seek(0)
+
+            # ✅ Load workbook for styling
+            workbook = load_workbook(output)
             worksheet = workbook.active
 
-            for col in worksheet.columns:
+            # ✅ Auto column width
+            for column_cells in worksheet.columns:
                 max_length = 0
-                col_letter = col[0].column_letter
+                column_letter = column_cells[0].column_letter
 
-                for cell in col:
-                    if cell.value:
-                        max_length = max(max_length, len(str(cell.value)))
+                for cell in column_cells:
+                    try:
+                        if cell.value:
+                            max_length = max(max_length, len(str(cell.value)))
+                    except:
+                        pass
 
-                worksheet.column_dimensions[col_letter].width = max_length + 2
+                worksheet.column_dimensions[column_letter].width = max_length + 2
 
+            # ✅ Bold header
             for cell in worksheet[1]:
                 cell.font = Font(bold=True)
 
-            new_buffer = BytesIO()
-            workbook.save(new_buffer)
-            new_buffer.seek(0)
+            # ✅ Save final file
+            final_output = BytesIO()
+            workbook.save(final_output)
+            final_output.seek(0)
 
+            # ✅ Response
             response = HttpResponse(
-                new_buffer.getvalue(),
+                final_output.getvalue(),
                 content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
             response['Content-Disposition'] = 'attachment; filename=contacts.xlsx'
@@ -109,7 +132,14 @@ class ExportExcelAPI(APIView):
             return response
 
         except Exception as e:
-            return HttpResponse(f"Error: {str(e)}", status=500)
+            return Response(
+                {
+                    "status": False,
+                    "message": "Failed to export data",
+                    "error": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 def home(request):
