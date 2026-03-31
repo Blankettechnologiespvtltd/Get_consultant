@@ -30,9 +30,7 @@ class RegisterAPIView(APIView):
 
         except ValidationError as e:
             return Response(
-                {
-                    "errors": e.detail
-                },
+                error_response({"errors": e.detail}),
                 status=status.HTTP_400_BAD_REQUEST
             )
 
