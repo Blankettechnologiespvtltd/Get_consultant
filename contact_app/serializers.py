@@ -8,9 +8,11 @@ class ContactSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Name cannot be empty")
         return value
 
-    def validate_mobile_number(self, value):
-        if len(value) != 10 or not value.isdigit():
-            raise serializers.ValidationError("Mobile number must be 10 digits")
+    def validate_mobile(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError("Mobile must contain only numbers")
+        if len(value) != 10:
+            raise serializers.ValidationError("Mobile must be exactly 10 digits")
         return value
 
     class Meta:
