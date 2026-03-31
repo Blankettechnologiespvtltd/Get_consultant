@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from django.http import HttpResponse
-
+from rest_framework.exceptions import ValidationError
 from .models import Contact
 from .serializers import ContactSerializer
 from .services import create_contact, generate_contacts_excel
@@ -25,7 +25,13 @@ class RegisterAPIView(APIView):
                     ContactSerializer(contact).data,
                     "User registered successfully"
                 ),
-            status=status.HTTP_201_CREATED
+                status=status.HTTP_201_CREATED
+            )
+
+        except ValidationError as e:
+            return Response(
+                error_response("Validation failed", e.detail),
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         except Exception as e:
